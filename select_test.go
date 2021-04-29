@@ -249,6 +249,20 @@ func TestSelectWithEmptyStringWhereClause(t *testing.T) {
 	assert.Equal(t, "SELECT * FROM users", sql)
 }
 
+
+func TestSelectWithUseIndex(t *testing.T) {
+	sql, _, err := Select("*").From("users").Where("").UseIndexs("idx", "idy").ToSql()
+	assert.NoError(t, err)
+	assert.Equal(t, "SELECT * FROM users USE INDEX (idx, idy)", sql)
+}
+
+func TestSelectWithUseIndexAndExplain(t *testing.T) {
+	sql, _, err := Select("*").Explain().From("users").Where("").UseIndexs("idx", "idy").ToSql()
+	assert.NoError(t, err)
+	assert.Equal(t, "EXPLAIN SELECT * FROM users USE INDEX (idx, idy)", sql)
+}
+
+
 func ExampleSelect() {
 	Select("id", "created", "first_name").From("users") // ... continue building up your query
 

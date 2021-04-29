@@ -10,6 +10,7 @@ import (
 )
 
 type selectData struct {
+	Explain           string
 	PlaceholderFormat PlaceholderFormat
 	RunWith           BaseRunner
 	Prefixes          []Sqlizer
@@ -18,6 +19,7 @@ type selectData struct {
 	From              Sqlizer
 	Joins             []Sqlizer
 	WhereParts        []Sqlizer
+	UseIndexs         []string
 	GroupBys          []string
 	HavingParts       []Sqlizer
 	OrderByParts      []Sqlizer
@@ -73,6 +75,10 @@ func (d *selectData) toSql() (sqlStr string, args []interface{}, err error) {
 
 	sql := &bytes.Buffer{}
 
+	if len(d.Explain) > 0 {
+		sql.WriteString("EXPLAIN ")
+	}
+
 	if len(d.Prefixes) > 0 {
 		args, err = appendToSql(d.Prefixes, sql, " ", args)
 		if err != nil {
@@ -102,6 +108,11 @@ func (d *selectData) toSql() (sqlStr string, args []interface{}, err error) {
 		if err != nil {
 			return
 		}
+	}
+
+	if len(d.UseIndexs) > 0 {
+		sql.WriteString(" USE INDEX ")
+		sql.WriteString("(" + strings.Join(d.UseIndexs, ", ") + ")")
 	}
 
 	if len(d.Joins) > 0 {
@@ -235,6 +246,10 @@ func (b SelectBuilder) toSqlRaw() (string, []interface{}, error) {
 	return data.toSqlRaw()
 }
 
+func (b SelectBuilder) Explain() SelectBuilder {
+	return builder.Set(b, "Explain", "Explain").(SelectBuilder)
+}
+
 // Prefix adds an expression to the beginning of the query
 func (b SelectBuilder) Prefix(sql string, args ...interface{}) SelectBuilder {
 	return b.PrefixExpr(Expr(sql, args...))
@@ -339,6 +354,10 @@ func (b SelectBuilder) Where(pred interface{}, args ...interface{}) SelectBuilde
 		return b
 	}
 	return builder.Append(b, "WhereParts", newWherePart(pred, args...)).(SelectBuilder)
+}
+
+func (b SelectBuilder) UseIndexs(indexs ...string) SelectBuilder {
+	return builder.Extend(b, "UseIndexs", indexs).(SelectBuilder)
 }
 
 // GroupBy adds GROUP BY expressions to the query.
