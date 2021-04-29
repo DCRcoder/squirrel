@@ -1,4 +1,4 @@
-module github.com/Masterminds/squirrel
+module github.com/DCRcoder/squirrel
 
 go 1.14
 
