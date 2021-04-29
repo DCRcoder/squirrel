@@ -256,6 +256,12 @@ func TestSelectWithUseIndex(t *testing.T) {
 	assert.Equal(t, "SELECT * FROM users USE INDEX (idx, idy)", sql)
 }
 
+func TestSelectWithForceIndex(t *testing.T) {
+	sql, _, err := Select("*").From("users").Where("").ForceIndexs("idx", "idy").ToSql()
+	assert.NoError(t, err)
+	assert.Equal(t, "SELECT * FROM users FORCE INDEX (idx, idy)", sql)
+}
+
 func TestSelectWithUseIndexAndExplain(t *testing.T) {
 	sql, _, err := Select("*").Explain().From("users").Where("").UseIndexs("idx", "idy").ToSql()
 	assert.NoError(t, err)

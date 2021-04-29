@@ -20,6 +20,7 @@ type selectData struct {
 	Joins             []Sqlizer
 	WhereParts        []Sqlizer
 	UseIndexs         []string
+	ForceIndexs       []string
 	GroupBys          []string
 	HavingParts       []Sqlizer
 	OrderByParts      []Sqlizer
@@ -113,6 +114,11 @@ func (d *selectData) toSql() (sqlStr string, args []interface{}, err error) {
 	if len(d.UseIndexs) > 0 {
 		sql.WriteString(" USE INDEX ")
 		sql.WriteString("(" + strings.Join(d.UseIndexs, ", ") + ")")
+	}
+
+	if len(d.ForceIndexs) > 0 {
+		sql.WriteString(" FORCE INDEX ")
+		sql.WriteString("(" + strings.Join(d.ForceIndexs, ", ") + ")")
 	}
 
 	if len(d.Joins) > 0 {
@@ -358,6 +364,10 @@ func (b SelectBuilder) Where(pred interface{}, args ...interface{}) SelectBuilde
 
 func (b SelectBuilder) UseIndexs(indexs ...string) SelectBuilder {
 	return builder.Extend(b, "UseIndexs", indexs).(SelectBuilder)
+}
+
+func (b SelectBuilder) ForceIndexs(indexs ...string) SelectBuilder {
+	return builder.Extend(b, "ForceIndexs", indexs).(SelectBuilder)
 }
 
 // GroupBy adds GROUP BY expressions to the query.
